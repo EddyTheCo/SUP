@@ -3,11 +3,11 @@
 This repository is a "general" application for doing classification using libtorch.
 It uses [yaml](https://github.com/jbeder/yaml-cpp) [input files](INPUT) for configuration of the classification process. 
 
-# Dependencies 
+## Dependencies 
 
 * libtorch from [Pytorch](https://pytorch.org/)
 
-#CMake variables for configuration
+## CMake variables for configuration
 
 |name|values|description|
 |----|------|-----------|
@@ -16,7 +16,7 @@ It uses [yaml](https://github.com/jbeder/yaml-cpp) [input files](INPUT) for conf
 |TRAIN|ON,OFF|Perform training on the model.|
 |TEST|ON,OFF|Perform testing on the model.|
 
-## Note on this
+### Note on this
 
 Custom modules and custom datasets have to have a constructor of the form like
 
@@ -25,7 +25,7 @@ Custom modules and custom datasets have to have a constructor of the form like
 |Custom_Module|Custom_ModuleImpl(YAML::Node config)|
 |Custom_Dataset|Custom_DatasetImpl(const std::string& root, Mode mode = Mode::kTrain)|
 
-# Install and Execute
+## Install and Execute
 
 ### Build and install
 ```
