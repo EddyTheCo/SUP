@@ -18,7 +18,7 @@ It uses [yaml](https://github.com/jbeder/yaml-cpp) [input files](INPUT) for conf
 
 ### Note on this
 
-Custom modules and custom datasets must  have a constructor of the form like
+Custom modules and custom datasets must  have a constructor of the form 
 
 |Object|Object constructor|
 |-------------|------------------------------------|
