@@ -1,3 +1,7 @@
+#define CHECK_TN 
+#ifdef	BUILD_TESTING
+#include"testing.hpp"
+#endif
 #include"custom_modules.hpp"
 #include"custom_datasets.hpp"
 #include"utils/yaml-torch.hpp"
@@ -59,7 +63,7 @@ void test( module& model, torch::Device device , DataLoader& data_loader,YAML::N
 	size_t iterator=0;
 	for (const auto& batch : data_loader) {
 		if(iterator>=num_batches)break;
-		auto data = batch.data.to(device);
+		auto data = batch.data.to(device).to(at::get_default_dtype_as_scalartype());
 		dataset_size+=data.size(0);
 		auto targets = batch.target.to(device);
 		auto output = model(data);
@@ -68,7 +72,7 @@ void test( module& model, torch::Device device , DataLoader& data_loader,YAML::N
 		correct += pred.eq(targets).sum().template item<int64_t>();
 		iterator++;
 	}
-std::cout<<"<Accuracy in test>:"<<1.0*correct/dataset_size<<std::endl;
+	std::cout<<"<Accuracy in test>:"<<1.0*correct/dataset_size<<std::endl;
 }
 
 int main(int argc, char** argv)
@@ -136,6 +140,7 @@ int main(int argc, char** argv)
 #ifdef TEST
 		test(model, device, *test_loader,config);
 #endif
+CHECK_TN
 		if(epoch%((config["Load and Save Module"])["Save every"].as<size_t>())==0)
 		{
 			std::cout<<"Saving model to "<<(config["Load and Save Module"])["To"].as<std::string>()<<std::endl;
