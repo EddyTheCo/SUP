@@ -40,7 +40,7 @@ void train(size_t epoch, module& model,torch::Device device, DataLoader& data_lo
 		loss.backward();
 		for(auto v:model->named_parameters())
 		{
-			std::cout<<v.key()<<"_grad:\n"<<v.value().grad().norm().template item<double>()<<std::endl;
+			std::cout<<v.key()<<"_grad:"<<v.value().grad().norm().template item<double>()<<std::endl;
 		}
 		optim->step();
 		sumloss+=loss.template item<float>();
