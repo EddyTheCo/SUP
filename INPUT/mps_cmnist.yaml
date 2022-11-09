@@ -1,4 +1,5 @@
-MPS: {
+Model: {
+  Name: MPS,
   Sin: 196,
   Sout: 10,
   Initial bond dimension: 1,
