@@ -1,0 +1,37 @@
+Model: {
+  Name: TTN,
+  Sin: 1024,
+  Sout: 10,
+  Initial bond dimension: 2,
+  Maximum bond dimension: 32,
+  Feature bond dimension: 2,
+  Truncation: 0.000000001,
+  Feature Map: 0, 
+}
+Dataset: {
+  Name: MNIST, #this is not used by the program is just for claritity;
+  From: /path/to/dataset,
+}
+Load and Save Module: {
+  Restart: no,
+  From: model.pt,
+  To: model.pt,
+  Save every: 100,
+}
+Train: {
+  Batch size: 64,
+  Number of batches: 938,
+}
+Test: {
+  Batch size: 30,
+  Number of batches: 1,
+}
+
+Optimizer: {
+  Adam: {
+    lr: 0.0002,
+}
+}
+
+Number of epochs: 2044
+USE_GPU: true 
