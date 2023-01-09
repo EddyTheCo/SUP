@@ -17,10 +17,13 @@ void train(size_t epoch, module& model,torch::Device device, DataLoader& data_lo
 	int64_t correct = 0;
 	double sumloss=0.;
 
-	auto optim=yaml_interface::get_optimizer(config["Optimizer"],model->parameters());
+
 	const static auto num_batches=(config["Train"])["Number of batches"].as<size_t>();
 	size_t dataset_size=0;
 	size_t iterator=0;
+
+
+    auto optim=yaml_interface::get_optimizer(config["Optimizer"],model->parameters());
 
 	for (auto& batch : data_loader) {
 		if(iterator>=num_batches)break;
@@ -45,8 +48,13 @@ void train(size_t epoch, module& model,torch::Device device, DataLoader& data_lo
 		optim->step();
 		sumloss+=loss.template item<float>();
 		iterator++;
+        if(iterator%((config["Train"])["Ortho move step"].as<size_t>()))
+        {
+            model->update();
+            optim=yaml_interface::get_optimizer(config["Optimizer"],model->parameters());
+        }
 	}
-	model->update();
+
 	std::cout<<"<Loss while training>:"<<sumloss/dataset_size<<std::endl;
 	std::cout<<"<Accuracy in trainning>:"<<1.0*correct/dataset_size<<std::endl;
 }

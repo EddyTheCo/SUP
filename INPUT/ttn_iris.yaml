@@ -22,6 +22,7 @@ Load and Save Module: {
 Train: {
   Batch size: 120,
   Number of batches: 1,
+  Ortho move step: 10,
 }
 Test: {
   Batch size: 30,
