@@ -5,10 +5,15 @@
 #include"custom_modules.hpp"
 #include"custom_datasets.hpp"
 #include"utils/yaml-torch.hpp"
-
+#include <fstream>
 using namespace custom_models;
 using namespace custom_models::datasets;
 using namespace torch::data::datasets;
+
+std::ofstream losstxt;
+std::ofstream acctraintxt;
+std::ofstream acctesttxt;
+
 
 template <typename DataLoader, typename module>
 void train(size_t epoch, module& model,torch::Device device, DataLoader& data_loader,YAML::Node config) {
@@ -47,8 +52,8 @@ void train(size_t epoch, module& model,torch::Device device, DataLoader& data_lo
 		iterator++;
 	}
 	model->update();
-	std::cout<<"<Loss while training>:"<<sumloss/dataset_size<<std::endl;
-	std::cout<<"<Accuracy in trainning>:"<<1.0*correct/dataset_size<<std::endl;
+    losstxt<<sumloss/dataset_size<<std::endl;
+    acctraintxt<<1.0*correct/dataset_size<<std::endl;
 }
 
 template <typename DataLoader, typename module>
@@ -72,11 +77,15 @@ void test( module& model, torch::Device device , DataLoader& data_loader,YAML::N
 		correct += pred.eq(targets).sum().template item<int64_t>();
 		iterator++;
 	}
-	std::cout<<"<Accuracy in test>:"<<1.0*correct/dataset_size<<std::endl;
+    acctesttxt<<1.0*correct/dataset_size<<std::endl;
 }
 
 int main(int argc, char** argv)
 {
+    losstxt.open("loss.txt",std::ios::out | std::ios::app );
+    acctraintxt.open("acctrain.txt",std::ios::out | std::ios::app);
+    acctesttxt.open("acctest.txt",std::ios::out | std::ios::app);
+
 	at::set_default_dtype(caffe2::TypeMeta::Make<double>());
 
 	YAML::Node config = YAML::LoadFile(((argc>1)?argv[1]:"config.yaml"));
@@ -150,4 +159,7 @@ CHECK_TN
 	}
 	torch::save(model, (config["Load and Save Module"])["To"].as<std::string>());
 
+    losstxt.close();
+    acctraintxt.close();
+    acctesttxt.close();
 }
