@@ -44,37 +44,21 @@ endif(TEST)
 
 include(FetchContent)
 find_package(Torch REQUIRED)
-
+find_package(YAML-CPP CONFIG REQUIRED)
 target_link_libraries(SUP PRIVATE  "${TORCH_LIBRARIES}")
-if(USE_YAML)
-	if(NOT TARGET yaml-cpp)
-		find_package(YAML-CPP CONFIG QUIET)
-		if(NOT YAML-CPP_FOUND)
-			message(STATUS "YAML-CPP was not found. Downloading")
-			FetchContent_Declare(
-				yaml-cpp
-				GIT_REPOSITORY git@github.com:jbeder/yaml-cpp.git
-				GIT_TAG yaml-cpp-0.7.0
-				)
-			FetchContent_MakeAvailable(yaml-cpp)
-		else()
-			message(STATUS "YAML FOUND in ${YAML-CPP_DIR}")
-		endif(NOT YAML-CPP_FOUND)
-		target_link_libraries(SUP PRIVATE  yaml-cpp)
-	endif(NOT TARGET yaml-cpp)
-endif(USE_YAML)
+target_link_libraries(SUP PRIVATE  yaml-cpp)
 
 
 
 FetchContent_Declare(
-	custom_modules
-	GIT_REPOSITORY git@github.com:EddyTheCo/custom_modules.git
-	GIT_TAG main
+	TTN
+	GIT_REPOSITORY git@github.com:EddyTheCo/TTN.git
+	GIT_TAG ttn_optimized
 	)
-FetchContent_MakeAvailable(custom_modules)
+FetchContent_MakeAvailable(TTN)
 
 
-target_link_libraries(SUP PRIVATE  custom_modules)
+target_link_libraries(SUP PRIVATE  TTN)
 
 
 FetchContent_Declare(
@@ -100,18 +84,13 @@ target_compile_features(SUP PUBLIC cxx_std_17)
 
 install(TARGETS SUP DESTINATION bin)
 install(DIRECTORY INPUT DESTINATION .)
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-    include(CTest)
-endif()
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
-    add_subdirectory(tests)
-endif()
+
 execute_process(COMMAND "git" "log" "--format='%H'" "-n 1"
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        OUTPUT_VARIABLE  commit)
-execute_process(COMMAND "git" "rev-parse" "--abbrev-ref" "HEAD" 
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        OUTPUT_VARIABLE  branch)
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+	OUTPUT_VARIABLE  commit)
+execute_process(COMMAND "git" "rev-parse" "--abbrev-ref" "HEAD"
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+	OUTPUT_VARIABLE  branch)
 
 FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/.${PROJECT_NAME}.txt  ${PROJECT_NAME}:\n)
 FILE(APPEND ${CMAKE_CURRENT_BINARY_DIR}/.${PROJECT_NAME}.txt  \t commit=${commit})

@@ -1,8 +1,4 @@
-#define CHECK_TN 
-#ifdef	BUILD_TESTING
-#include"testing.hpp"
-#endif
-#include"custom_modules.hpp"
+#include"custom-modules/ttn.hpp"
 #include"custom_datasets.hpp"
 #include"utils/yaml-torch.hpp"
 
@@ -15,47 +11,30 @@ void train(size_t epoch, module& model,torch::Device device, DataLoader& data_lo
 
 	model->train();
 	int64_t correct = 0;
-	double sumloss=0.;
-
 
 	const static auto num_batches=(config["Train"])["Number of batches"].as<size_t>();
+	const static auto alpha=(config["Optimizer"])["alpha"].as<double>();
 	size_t dataset_size=0;
 	size_t iterator=0;
 
-
-    auto optim=yaml_interface::get_optimizer(config["Optimizer"],model->parameters());
 
 	for (auto& batch : data_loader) {
 		if(iterator>=num_batches)break;
 		auto data = batch.data.to(device).to(at::get_default_dtype_as_scalartype());
 		dataset_size+=data.size(0);
 		auto targets = batch.target.to(device).to(torch::kInt64);
-		auto output = model(data);
+		auto output = model(data,targets,alpha);
 
 		const auto pred = output.argmax(1);
 
-
 		correct += pred.eq(targets).sum().template item<int64_t>();
-		auto loss = torch::cross_entropy_loss(output, targets);
-		AT_ASSERT(!std::isnan(loss.template item<float>()));
 
-		optim->zero_grad();
-		loss.backward();
 		for(auto v:model->named_parameters())
 		{
 			std::cout<<v.key()<<"_grad:"<<v.value().grad().norm().template item<double>()<<std::endl;
 		}
-		optim->step();
-		sumloss+=loss.template item<float>();
 		iterator++;
-        if(iterator%((config["Train"])["Ortho move step"].as<size_t>()))
-        {
-            model->update();
-            optim=yaml_interface::get_optimizer(config["Optimizer"],model->parameters());
-        }
 	}
-
-	std::cout<<"<Loss while training>:"<<sumloss/dataset_size<<std::endl;
 	std::cout<<"<Accuracy in trainning>:"<<1.0*correct/dataset_size<<std::endl;
 }
 
@@ -105,7 +84,7 @@ int main(int argc, char** argv)
 	}
 	torch::Device device(device_type);
 
-	auto model=MODEL(config["Model"]);
+	auto model=TTN(config["Model"]);
 
 
 	if((config["Load and Save Module"])["Restart"].as<bool>())
@@ -148,7 +127,6 @@ int main(int argc, char** argv)
 #ifdef TEST
 		test(model, device, *test_loader,config);
 #endif
-CHECK_TN
 		if(epoch%((config["Load and Save Module"])["Save every"].as<size_t>())==0)
 		{
 			std::cout<<"Saving model to "<<(config["Load and Save Module"])["To"].as<std::string>()<<std::endl;
