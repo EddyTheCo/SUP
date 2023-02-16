@@ -43,12 +43,14 @@ void train(size_t epoch, module& model,torch::Device device, DataLoader& data_lo
 
 		optim->zero_grad();
 		loss.backward();
-		for(auto v:model->named_parameters())
-		{
-			std::cout<<v.key()<<"_grad:"<<v.value().grad().norm().template item<double>()<<std::endl;
-		}
+
 		optim->step();
 		sumloss+=loss.template item<float>();
+		if(iterator%((config["Train"])["Ortho move step"].as<size_t>()))
+        	{
+	            model->update();
+        	    optim=yaml_interface::get_optimizer(config["Optimizer"],model->parameters());
+	        }
 		iterator++;
 	}
 	model->update();
